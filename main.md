@@ -34,11 +34,54 @@ SwiftUIの宣言的な記法は一見シンプルで強力ですが、実際の�
 
 SwiftUIを使った開発が進むにつれ、1つの画面にifやswitchを使った複数の状態や分岐が増え、bodyが肥大化してView全体の構造を把握しづらくなることがあります。
 
-こうした肥大化を避けるためには、「Identity（識別性）」や「Dependencies（依存関係）」といった観点を意識することが重要です。
+こうした肥大化を避けるためには、Identity（識別性）やDependencies（依存関係）といった観点を意識することが重要です。
 
 #### Identity（識別性）
 
 SwiftUIでは、Viewは「値」として宣言され、再生成・再評価を繰り返しますが、状態を保持するためには「同じViewである」と識別できる必要があります。ifやswitchを多用すると、Viewの条件分岐が深くなり、内部的にSwiftUIがViewの同一性を判別するロジックが複雑化します。
+
+以下は、条件によって異なるViewを定義しているコード例です。
+
+<figure>
+
+<figcaption>異なるIdentityを持つViewを条件分岐で切り替える例</figcaption>
+
+```Swift
+VStack {
+  if dog.isGood {
+    PawView(tint: .green)
+    Spacer()
+  } else {
+    Spacer()
+    PawView(tint: .red)
+  }
+}
+```
+
+</figure>
+
+このコードでは、画面上では同じように見えるViewが表示されますが、内部的には異なるIdentityを持つ別のViewとして扱われるため、条件が変わるたびにViewの差し替えが発生します。さらにViewが複雑になると、可読性の低下やパフォーマンスへの影響も考えられます。
+
+次に、同一のIdentityを持ちながらカラーやレイアウトのみを切り替えるように改善した例を示します。
+
+<figure>
+
+<figcaption>異なるViewを定義した条件分岐</figcaption>
+
+```Swift
+PawView(tint: dog.isGood ? .green : .red)
+.frame(
+  maxHeight: .infinity,
+  alignment: dog.isGood ? .top : .bottom
+)
+```
+
+</figure>
+
+同一のIdentityを持つViewに変更することで、可読性が向上し、状態変化時のスムーズなレイアウト移行が期待できます。
+
+このように、SwiftUIではViewの同一性を維持した設計が推奨されています。
+
 
 #### Dependencies（依存関係）
 
